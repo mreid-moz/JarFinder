@@ -28,131 +28,136 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 public class JarFinder {
-	boolean searchCompleted = false;
-	List<JarMatch> matches = new ArrayList<JarMatch>();
-	String target;
-	String targetClass;
-	String searchPath;
-	
-	public JarFinder(String target, String searchPath) {
-		this.target = target;
-		this.targetClass = target.replaceAll("[.]", "/") + ".class";
-		this.searchPath = searchPath;
-	}
-	
-	public static void printUsage() {
-		System.out.println(String.format("Usage: %s classname dir [ dir2 ] [ dir3 ] [ ... ]", JarFinder.class.getCanonicalName()));
-	}
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		if (args == null || args.length < 2) {
-			printUsage();
-			System.exit(-1);
-		}
-		
-		boolean found = false;
-		String target = args[0];
-		for (int i = 1; i < args.length; i++) {
-			String searchPath = args[i];
-			JarFinder finder = new JarFinder(target, searchPath);
-			finder.doSearch();
-			if (finder.matchCount() > 0) {
-				finder.printMatches();
-				found = true;
-			}
-		}
-		
-		if (!found) {
-			System.out.println(String.format("Could not find class '%s' in any jar in the given path(s)", target));
-		}
-	}
-	
-	public void printMatches() {
-		if (!searchCompleted) {
-			doSearch();
-		}
-		
-		System.out.println(String.format("Search results for '%s':", target));
-		for(JarMatch match : matches) {
-			System.out.println(String.format("%s contains the class '%s'", match.getJarName(), match.getClassName()));
-		}
-	}
-	
-	public int matchCount() {
-		if (!searchCompleted) {
-			doSearch();
-		}
-		
-		return matches.size();
-	}
-	
-	public void refreshSearch() {
-		searchCompleted = false;
-		doSearch();
-	}
-	
-	public void doSearch() {
-		if (!searchCompleted) {
-			File searchFile = new File(searchPath);
-			walk(searchFile);
-			searchCompleted = true;
-		}
-	}
-	
-	public void walk(File fileOrDir) {
-		String pattern = ".jar";
+    boolean searchCompleted = false;
+    List<JarMatch> matches = new ArrayList<JarMatch>();
+    String target;
+    String targetClass;
+    String searchPath;
 
-		if (fileOrDir == null)
-		    throw new IllegalArgumentException("Can't search null...");
+    public JarFinder(String target, String searchPath) {
+        this.target = target;
+        this.targetClass = target.replaceAll("[.]", "/") + ".class";
+        this.searchPath = searchPath;
+    }
 
-		if (fileOrDir.isFile() && fileOrDir.getName().endsWith(pattern)) {
-		    matches.addAll(searchJar(fileOrDir));
-		} else if (fileOrDir.isDirectory()) {
-		    for (File listFile : fileOrDir.listFiles()) {
-		        if(listFile.isDirectory()) {
-		            walk(listFile);
-		        } else {
-		            if(listFile.getName().endsWith(pattern)) {
-		                matches.addAll(searchJar(listFile));
-		            }
-		        }
-		    }
-		} else {
-		    throw new IllegalArgumentException(String.format("Error, '%s' is neither a jar file nor a directory.", fileOrDir.getName()));
-		}
-	}
+    public static void printUsage() {
+        System.out.println(String.format("Usage: %s classname dir [ dir2 ] [ dir3 ] [ ... ]", JarFinder.class.getCanonicalName()));
+    }
+    /**
+     * @param args
+     */
+    public static void main(String[] args) {
+        if (args == null || args.length < 2) {
+            printUsage();
+            System.exit(-1);
+        }
 
-	public List<JarMatch> searchJar(File listFile) {
-		JarFile jarFile;
-		List<JarMatch> matches = new ArrayList<JarMatch>();
-		try {
-			jarFile = new JarFile(listFile);
+        boolean found = false;
+        String target = args[0];
+        for (int i = 1; i < args.length; i++) {
+            String searchPath = args[i];
+            JarFinder finder = new JarFinder(target, searchPath);
+            finder.doSearch();
+            if (finder.matchCount() > 0) {
+                finder.printMatches();
+                found = true;
+            }
+        }
 
-			JarEntry targetJarEntry = jarFile.getJarEntry(targetClass);
-			if (targetJarEntry != null) {
-				matches.add(new JarMatch(listFile.getCanonicalPath(), target));
-			} else {
-			    // If we just have a bare class name, search the whole jar
-			    if (target.matches("^[^.]+$")) {
-			        // No package names.  Search the whole thing.
-			        Enumeration<JarEntry> entries = jarFile.entries();
-			        while (entries.hasMoreElements()) {
-			            JarEntry entry = entries.nextElement();
-			            String name = entry.getName();
-			            if (name.endsWith("/" + targetClass)) {
-			                //System.out.println("Found name: " + name + " in jar " + listFile.getCanonicalPath());
-			                matches.add(new JarMatch(listFile.getCanonicalPath(), pathToClassName(name)));
-			            }
-			        }
-			    }
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return matches;
-	}
+        if (!found) {
+            System.out.println(String.format("Could not find class '%s' in any jar in the given path(s)", target));
+        }
+    }
+
+    public void printMatches() {
+        if (!searchCompleted) {
+            doSearch();
+        }
+
+        System.out.println(String.format("Search results for '%s':", target));
+        for(JarMatch match : matches) {
+            System.out.println(String.format("%s contains the class '%s'", match.getJarName(), match.getClassName()));
+        }
+    }
+
+    public int matchCount() {
+        if (!searchCompleted) {
+            doSearch();
+        }
+
+        return matches.size();
+    }
+
+    public void refreshSearch() {
+        searchCompleted = false;
+        doSearch();
+    }
+
+    public void doSearch() {
+        if (!searchCompleted) {
+            File searchFile = new File(searchPath);
+            walk(searchFile);
+            searchCompleted = true;
+        }
+    }
+
+    public void walk(File fileOrDir) {
+        String pattern = ".jar";
+
+        if (fileOrDir == null)
+            throw new IllegalArgumentException("Can't search null...");
+
+        if (fileOrDir.isFile() && fileOrDir.getName().endsWith(pattern)) {
+            matches.addAll(searchJar(fileOrDir));
+        } else if (fileOrDir.isDirectory()) {
+            for (File listFile : fileOrDir.listFiles()) {
+                if(listFile.isDirectory()) {
+                    walk(listFile);
+                } else {
+                    if(listFile.getName().endsWith(pattern)) {
+                        matches.addAll(searchJar(listFile));
+                    }
+                }
+            }
+        } else {
+            throw new IllegalArgumentException(String.format("Error, '%s' is neither a jar file nor a directory.", fileOrDir.getName()));
+        }
+    }
+
+    public List<JarMatch> searchJar(File listFile) {
+        JarFile jarFile;
+        List<JarMatch> matches = new ArrayList<JarMatch>();
+        try {
+            if (listFile.length() > 0) {
+                jarFile = new JarFile(listFile);
+
+                JarEntry targetJarEntry = jarFile.getJarEntry(targetClass);
+                if (targetJarEntry != null) {
+                    matches.add(new JarMatch(listFile.getCanonicalPath(), target));
+                } else {
+                    // If we just have a bare class name, search the whole jar
+                    if (target.matches("^[^.]+$")) {
+                        // No package names.  Search the whole thing.
+                        Enumeration<JarEntry> entries = jarFile.entries();
+                        while (entries.hasMoreElements()) {
+                            JarEntry entry = entries.nextElement();
+                            String name = entry.getName();
+                            if (name.endsWith("/" + targetClass)) {
+                                //System.out.println("Found name: " + name + " in jar " + listFile.getCanonicalPath());
+                                matches.add(new JarMatch(listFile.getCanonicalPath(), pathToClassName(name)));
+                            }
+                        }
+                    }
+                }
+            } else {
+                // Skip empty jar file.
+                //System.out.println(String.format("Skipping empty jar file '%s'", listFile.getName()));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return matches;
+    }
 
     private String pathToClassName(String name) {
         if (name == null) return null;
