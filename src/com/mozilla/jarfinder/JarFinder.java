@@ -120,7 +120,7 @@ public class JarFinder {
 		        }
 		    }
 		} else {
-		    throw new IllegalArgumentException(String.format("Error, '%s' is neither a file nor a directory.", fileOrDir.getName()));
+		    throw new IllegalArgumentException(String.format("Error, '%s' is neither a jar file nor a directory.", fileOrDir.getName()));
 		}
 	}
 
