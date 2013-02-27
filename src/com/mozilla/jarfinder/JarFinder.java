@@ -43,9 +43,7 @@ public class JarFinder {
     public static void printUsage() {
         System.out.println(String.format("Usage: %s classname dir [ dir2 ] [ dir3 ] [ ... ]", JarFinder.class.getCanonicalName()));
     }
-    /**
-     * @param args
-     */
+
     public static void main(String[] args) {
         if (args == null || args.length < 2) {
             printUsage();
