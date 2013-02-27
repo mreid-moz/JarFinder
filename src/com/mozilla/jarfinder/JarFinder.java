@@ -101,17 +101,26 @@ public class JarFinder {
 		}
 	}
 	
-	public void walk(File dir) {
+	public void walk(File fileOrDir) {
 		String pattern = ".jar";
 
-		for (File listFile : dir.listFiles()) {
-			if(listFile.isDirectory()) {
-				walk(listFile);
-			} else {
-				if(listFile.getName().endsWith(pattern)) {
-				    matches.addAll(searchJar(listFile));
-				}
-			}
+		if (fileOrDir == null)
+		    throw new IllegalArgumentException("Can't search null...");
+
+		if (fileOrDir.isFile() && fileOrDir.getName().endsWith(pattern)) {
+		    matches.addAll(searchJar(fileOrDir));
+		} else if (fileOrDir.isDirectory()) {
+		    for (File listFile : fileOrDir.listFiles()) {
+		        if(listFile.isDirectory()) {
+		            walk(listFile);
+		        } else {
+		            if(listFile.getName().endsWith(pattern)) {
+		                matches.addAll(searchJar(listFile));
+		            }
+		        }
+		    }
+		} else {
+		    throw new IllegalArgumentException(String.format("Error, '%s' is neither a file nor a directory.", fileOrDir.getName()));
 		}
 	}
 
