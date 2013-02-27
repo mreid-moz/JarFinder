@@ -32,11 +32,13 @@ public class JarFinder {
     List<JarMatch> matches = new ArrayList<JarMatch>();
     String target;
     String targetClass;
+    String targetSource;
     String searchPath;
 
     public JarFinder(String target, String searchPath) {
         this.target = target;
         this.targetClass = target.replaceAll("[.]", "/") + ".class";
+        this.targetSource = this.targetClass.replaceFirst("[.]class$", ".java");
         this.searchPath = searchPath;
     }
 
@@ -74,7 +76,7 @@ public class JarFinder {
 
         System.out.println(String.format("Search results for '%s':", target));
         for(JarMatch match : matches) {
-            System.out.println(String.format("%s contains the class '%s'", match.getJarName(), match.getClassName()));
+            System.out.println(String.format("%s contains the class '%s' (%s)", match.getJarName(), match.getClassName(), match.getMatchType()));
         }
     }
 
@@ -131,8 +133,12 @@ public class JarFinder {
 
                 JarEntry targetJarEntry = jarFile.getJarEntry(targetClass);
                 if (targetJarEntry != null) {
-                    matches.add(new JarMatch(listFile.getCanonicalPath(), target));
+                    matches.add(new JarMatch(listFile.getCanonicalPath(), target, "compiled"));
                 } else {
+                    targetJarEntry = jarFile.getJarEntry(targetSource);
+                    if (targetJarEntry != null) {
+                        matches.add(new JarMatch(listFile.getCanonicalPath(), target, "source"));
+                    }
                     // If we just have a bare class name, search the whole jar
                     if (target.matches("^[^.]+$")) {
                         // No package names.  Search the whole thing.
@@ -142,7 +148,9 @@ public class JarFinder {
                             String name = entry.getName();
                             if (name.endsWith("/" + targetClass)) {
                                 //System.out.println("Found name: " + name + " in jar " + listFile.getCanonicalPath());
-                                matches.add(new JarMatch(listFile.getCanonicalPath(), pathToClassName(name)));
+                                matches.add(new JarMatch(listFile.getCanonicalPath(), pathToClassName(name), "compiled"));
+                            } else if (name.endsWith("/" + targetSource)) {
+                                matches.add(new JarMatch(listFile.getCanonicalPath(), pathToClassName(name), "source"));
                             }
                         }
                     }
@@ -162,21 +170,23 @@ public class JarFinder {
         String className = name.replaceAll("[/]", ".");
         className = className.replaceFirst("^\\.", "");
         className = className.replaceFirst("\\.class$", "");
+        className = className.replaceFirst("\\.java$", "");
         return className;
     }
 }
 
 class JarMatch {
-    private String jarName;
-    private String className;
+    private final String jarName;
+    private final String className;
+    private final String matchType;
 
     public String getJarName() { return jarName; }
-    public void setJarName(String jarName) { this.jarName = jarName; }
     public String getClassName() { return className; }
-    public void setClassName(String className) { this.className = className; }
+    public String getMatchType() { return matchType; }
 
-    public JarMatch(String jarName, String className) {
+    public JarMatch(String jarName, String className, String matchType) {
         this.jarName = jarName;
         this.className = className;
+        this.matchType = matchType;
     }
 }
