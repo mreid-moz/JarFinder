@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<project basedir="." default="build" name="JarFinder">
+  <description>JarFinder Build File</description>
+
+  <property name="src"   location="src"/>
+  <property name="dist"  location="dist"/>
+  <property name="build" location="build"/>
+
+  <property name="version" value="0.4"/>
+  <property name="jarfile" value="${ant.project.name}-${version}.jar"/>
+
+  <target name="clean">
+    <delete dir="${build}" failonerror="false"/>
+    <delete dir="${dist}" failonerror="false"/>
+  </target>
+
+  <target name="init">
+    <mkdir dir="${build}"/>
+    <mkdir dir="${dist}"/>
+  </target>
+
+  <target name="build" depends="init">
+    <echo message="${ant.project.name} ${version}: ${ant.file}"/>
+
+    <javac srcdir="${src}" destdir="${build}"/>
+  </target>
+
+  <target name="dist" depends="build">
+    <jar destfile="${dist}/${jarfile}" basedir="${build}"/>
+  </target>
+</project>
