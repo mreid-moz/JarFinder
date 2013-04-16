@@ -22,6 +22,7 @@ package com.mozilla.jarfinder;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.JarEntry;
@@ -43,19 +44,30 @@ public class JarFinder {
     }
 
     public static void printUsage() {
-        System.out.println(String.format("Usage: %s classname dir [ dir2 ] [ dir3 ] [ ... ]", JarFinder.class.getCanonicalName()));
+        System.out.println(String.format("Usage: %s classname [ dir ] [ dir2 ] [ dir3 ] [ ... ]", JarFinder.class.getCanonicalName()));
+        String pwd = "./";
+        try {
+            pwd = new File(".").getCanonicalPath();
+        } catch (IOException e) {
+
+        }
+        System.out.println(String.format("If no directories are specified, the current directory '%s' will be searched.", pwd));
     }
 
     public static void main(String[] args) {
-        if (args == null || args.length < 2) {
+        if (args == null || args.length < 1) {
             printUsage();
             System.exit(-1);
         }
 
+        List<String> argList = new ArrayList<String>();
+        argList.addAll(Arrays.asList(args));
+        if (args.length == 1)
+            argList.add("./"); // default to searching the current directory.
+
         boolean found = false;
-        String target = args[0];
-        for (int i = 1; i < args.length; i++) {
-            String searchPath = args[i];
+        String target = argList.remove(0);
+        for (String searchPath : argList) {
             JarFinder finder = new JarFinder(target, searchPath);
             finder.doSearch();
             if (finder.matchCount() > 0) {
