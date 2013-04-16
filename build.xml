@@ -6,6 +6,7 @@
   <property name="src"   location="src"/>
   <property name="dist"  location="dist"/>
   <property name="build" location="build"/>
+  <property name="install" location="${user.home}/bin"/>
 
   <property name="version" value="0.4"/>
   <property name="jarfile" value="${ant.project.name}-${version}.jar"/>
@@ -21,12 +22,21 @@
   </target>
 
   <target name="build" depends="init">
-    <echo message="${ant.project.name} ${version}: ${ant.file}"/>
-
     <javac includeantruntime="false" srcdir="${src}" destdir="${build}"/>
   </target>
 
   <target name="dist" depends="build">
     <jar destfile="${dist}/${jarfile}" basedir="${build}"/>
+  </target>
+
+  <target name="install" depends="dist">
+    <mkdir dir="${install}"/>
+    <copy todir="${install}" file="${dist}/${jarfile}"/>
+
+    <echo file="${install}/jarfinder" append="false">#!/bin/bash
+java -cp ${install}/${jarfile} com.mozilla.jarfinder.JarFinder $@
+    </echo>
+    <chmod file="${install}/jarfinder" perm="755"/>
+    <echo message="${ant.project.name} ${version} installed to ${install}/jarfinder.  Add it to your PATH for great convenience!"/>
   </target>
 </project>
