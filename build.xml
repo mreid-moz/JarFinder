@@ -23,7 +23,7 @@
   <target name="build" depends="init">
     <echo message="${ant.project.name} ${version}: ${ant.file}"/>
 
-    <javac srcdir="${src}" destdir="${build}"/>
+    <javac includeantruntime="false" srcdir="${src}" destdir="${build}"/>
   </target>
 
   <target name="dist" depends="build">
