@@ -38,5 +38,6 @@ java -cp ${install}/${jarfile} com.mozilla.jarfinder.JarFinder $@
     </echo>
     <chmod file="${install}/jarfinder" perm="755"/>
     <echo message="${ant.project.name} ${version} installed to ${install}/jarfinder.  Add it to your PATH for great convenience!"/>
+    <echo message="  > export PATH=$PATH:${install}"/>
   </target>
 </project>

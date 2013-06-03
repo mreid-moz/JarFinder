@@ -21,7 +21,8 @@ You can also specify a bare classname to search entire jars:
 
 ### Installation:
 - `git clone <jarfinder repo>`
-- To install to ~/bin:
+- To install to ~/bin (with wrapper script):
   - `ant install`
+  - Test with `jarfinder JarFinder`
 - To just build a jar:
   - `ant dist`
